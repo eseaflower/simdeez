@@ -1,7 +1,12 @@
+#![cfg_attr(feature="unstable_avx512", feature(avx512_target_feature))]
 extern crate simdeez;
 
 #[cfg(test)]
-mod tests {    
+mod tests {
+
+    #[cfg(feature = "unstable_avx512")]
+    use simdeez::avx512::*;
+
     use simdeez::avx2::*;
     use simdeez::scalar::*;
     use simdeez::sse2::*;
@@ -66,8 +71,11 @@ mod tests {
         unsafe {
             set1_sse2(floats, ints);
             set1_sse41(floats, ints);
-            set1_avx2(floats, ints);            
+            set1_avx2(floats, ints);
             set1_scalar(floats, ints);
+            if cfg!(feature = "unstable_avx512") {
+                set1_avx512(floats, ints);
+            }
         }
     }
     simd_runtime_generate!(
@@ -110,9 +118,12 @@ mod tests {
         ];
         unsafe {
             sub_sse2(floats, ints);
-            sub_sse41(floats, ints);            
+            sub_sse41(floats, ints);
             sub_avx2(floats, ints);
             sub_scalar(floats, ints);
+            if cfg!(unstable_avx512) {
+                sub_avx512(floats, ints);
+            }
         }
     }
     simd_compiletime_generate!(
@@ -187,7 +198,7 @@ mod tests {
             for i in 0..S::VI32_WIDTH {
                 assert_eq!(r[i], 2);
             }
-            
+
             let a = S::set1_ps(2.0);
             let b = S::set1_ps(1.0);
             let cmp = S::cmplt_ps(a, b);
@@ -231,12 +242,15 @@ mod tests {
     fn blendv_test() {
         unsafe {
             blendv_sse41();
-            blendv_avx2();            
+            blendv_avx2();
             blendv_sse2();
             blendv_scalar();
+            if cfg!(feature = "unstable_avx512") {
+                blendv_avx512();
+            }
         }
     }
-    
+
     simd_runtime_generate!(
         fn sum_simdeez_horizontal(x: &[f32]) -> f32 {
             assert!(x.len() % S::VF32_WIDTH == 0);
@@ -255,13 +269,18 @@ mod tests {
         let x: Vec<f32> = thread_rng().sample_iter(&Standard).take(4000).collect();
 
         unsafe {
-            let avx2_res = sum_simdeez_horizontal_avx2(&x);            
+            let avx2_res = sum_simdeez_horizontal_avx2(&x);
             let sse41_res = sum_simdeez_horizontal_sse41(&x);
             let sse_res = sum_simdeez_horizontal_sse2(&x);
             let scalar_res = sum_simdeez_horizontal_scalar(&x);
-            assert_delta!(avx2_res, sse41_res, 0.01);            
+
+            assert_delta!(avx2_res, sse41_res, 0.01);
             assert_delta!(sse_res, sse41_res, 0.01);
             assert_delta!(sse_res, scalar_res, 0.01);
+            if cfg!(feature = "unstable_avx512") {
+                let avx512_res = sum_simdeez_horizontal_avx512(&x);
+                assert_delta!(avx512_res, scalar_res, 0.01);
+            }
         }
     }
     simd_runtime_generate!(
@@ -282,13 +301,17 @@ mod tests {
         let x: Vec<f64> = thread_rng().sample_iter(&Standard).take(4000).collect();
 
         unsafe {
-            let avx2_res = sum_simdeez_horizontal_pd_avx2(&x);            
+            let avx2_res = sum_simdeez_horizontal_pd_avx2(&x);
             let sse41_res = sum_simdeez_horizontal_pd_sse41(&x);
             let sse_res = sum_simdeez_horizontal_pd_sse2(&x);
-            let scalar_res = sum_simdeez_horizontal_pd_scalar(&x);            
+            let scalar_res = sum_simdeez_horizontal_pd_scalar(&x);
             assert_delta!(avx2_res, sse41_res, 0.01);
             assert_delta!(sse_res, sse41_res, 0.01);
             assert_delta!(sse_res, scalar_res, 0.01);
+            if cfg!(feature = "unstable_avx512") {
+                let avx512_res = sum_simdeez_horizontal_pd_avx512(&x);
+                assert_delta!(avx512_res, scalar_res, 0.01);
+            }
         }
     }
     #[inline(always)]
@@ -300,7 +323,7 @@ mod tests {
     unsafe fn setlanetest_avx2() -> f32 {
         setlanetest::<Avx2>()
     }
-   
+
     #[inline(always)]
     unsafe fn gathertest_simd<S: Simd>() -> f32 {
         let a = [4.0, 3.0, 2.0, 1.0];

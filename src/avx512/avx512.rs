@@ -191,73 +191,109 @@ impl Simd for Avx512 {
     #[inline(always)]
     unsafe fn cmpeq_ps(a: Self::Vf32, b: Self::Vf32) -> Self::Vf32 {
         let kmask = _mm512_cmpeq_ps_mask(a.0, b.0);
-        F32x16(_mm512_maskz_mov_ps(kmask, _mm512_set1_ps(-1f32)))
+        F32x16(_mm512_maskz_mov_ps(
+            kmask,
+            _mm512_castsi512_ps(_mm512_set1_epi32(-1)),
+        ))
         // F32x16(_mm512_cmp_ps(a.0, b.0, _CMP_EQ_OQ))
     }
     #[inline(always)]
     unsafe fn cmpneq_ps(a: Self::Vf32, b: Self::Vf32) -> Self::Vf32 {
         let kmask = _mm512_cmpneq_ps_mask(a.0, b.0);
-        F32x16(_mm512_maskz_mov_ps(kmask, _mm512_set1_ps(-1f32)))
+        F32x16(_mm512_maskz_mov_ps(
+            kmask,
+            _mm512_castsi512_ps(_mm512_set1_epi32(-1)),
+        ))
         // F32x16(_mm512_cmp_ps(a.0, b.0, _CMP_NEQ_OQ))
     }
     #[inline(always)]
     unsafe fn cmpge_ps(a: Self::Vf32, b: Self::Vf32) -> Self::Vf32 {
         let kmask = _mm512_cmp_ps_mask::<_CMP_GE_OQ>(a.0, b.0);
-        F32x16(_mm512_maskz_mov_ps(kmask, _mm512_set1_ps(-1f32)))
+        F32x16(_mm512_maskz_mov_ps(
+            kmask,
+            _mm512_castsi512_ps(_mm512_set1_epi32(-1)),
+        ))
         // F32x16(_mm512_cmp_ps(a.0, b.0, _CMP_GE_OQ))
     }
     #[inline(always)]
     unsafe fn cmpgt_ps(a: Self::Vf32, b: Self::Vf32) -> Self::Vf32 {
         let kmask = _mm512_cmp_ps_mask::<_CMP_GT_OQ>(a.0, b.0);
-        F32x16(_mm512_maskz_mov_ps(kmask, _mm512_set1_ps(-1f32)))
+        F32x16(_mm512_maskz_mov_ps(
+            kmask,
+            _mm512_castsi512_ps(_mm512_set1_epi32(-1)),
+        ))
         // F32x16(_mm512_cmp_ps(a.0, b.0, _CMP_GT_OQ))
     }
     #[inline(always)]
     unsafe fn cmple_ps(a: Self::Vf32, b: Self::Vf32) -> Self::Vf32 {
         let kmask = _mm512_cmp_ps_mask::<_CMP_LE_OQ>(a.0, b.0);
-        F32x16(_mm512_maskz_mov_ps(kmask, _mm512_set1_ps(-1f32)))
+        F32x16(_mm512_maskz_mov_ps(
+            kmask,
+            _mm512_castsi512_ps(_mm512_set1_epi32(-1)),
+        ))
         // F32x16(_mm512_cmp_ps(a.0, b.0, _CMP_LE_OQ))
     }
     #[inline(always)]
     unsafe fn cmplt_ps(a: Self::Vf32, b: Self::Vf32) -> Self::Vf32 {
         let kmask = _mm512_cmp_ps_mask::<_CMP_LT_OQ>(a.0, b.0);
-        F32x16(_mm512_maskz_mov_ps(kmask, _mm512_set1_ps(-1f32)))
+        F32x16(_mm512_maskz_mov_ps(
+            kmask,
+            _mm512_castsi512_ps(_mm512_set1_epi32(-1)),
+        ))
         // F32x16(_mm512_cmp_ps(a.0, b.0, _CMP_LT_OQ))
     }
     #[inline(always)]
     unsafe fn cmpeq_pd(a: Self::Vf64, b: Self::Vf64) -> Self::Vf64 {
         let kmask = _mm512_cmpeq_pd_mask(a.0, b.0);
-        F64x8(_mm512_maskz_mov_pd(kmask, _mm512_set1_pd(-1f64)))
+        F64x8(_mm512_maskz_mov_pd(
+            kmask,
+            _mm512_castsi512_pd(_mm512_set1_epi64(-1)),
+        ))
         // F64x8(_mm512_cmp_pd(a.0, b.0, _CMP_EQ_OQ))
     }
     #[inline(always)]
     unsafe fn cmpneq_pd(a: Self::Vf64, b: Self::Vf64) -> Self::Vf64 {
         let kmask = _mm512_cmpneq_pd_mask(a.0, b.0);
-        F64x8(_mm512_maskz_mov_pd(kmask, _mm512_set1_pd(-1f64)))
+        F64x8(_mm512_maskz_mov_pd(
+            kmask,
+            _mm512_castsi512_pd(_mm512_set1_epi64(-1)),
+        ))
         // F64x8(_mm512_cmp_pd(a.0, b.0, _CMP_NEQ_OQ))
     }
     #[inline(always)]
     unsafe fn cmpge_pd(a: Self::Vf64, b: Self::Vf64) -> Self::Vf64 {
         let kmask = _mm512_cmp_pd_mask::<_CMP_GE_OQ>(a.0, b.0);
-        F64x8(_mm512_maskz_mov_pd(kmask, _mm512_set1_pd(-1f64)))
+        F64x8(_mm512_maskz_mov_pd(
+            kmask,
+            _mm512_castsi512_pd(_mm512_set1_epi64(-1)),
+        ))
         // F64x8(_mm512_cmp_pd(a.0, b.0, _CMP_GE_OQ))
     }
     #[inline(always)]
     unsafe fn cmpgt_pd(a: Self::Vf64, b: Self::Vf64) -> Self::Vf64 {
         let kmask = _mm512_cmp_pd_mask::<_CMP_GT_OQ>(a.0, b.0);
-        F64x8(_mm512_maskz_mov_pd(kmask, _mm512_set1_pd(-1f64)))
+        F64x8(_mm512_maskz_mov_pd(
+            kmask,
+            _mm512_castsi512_pd(_mm512_set1_epi64(-1)),
+        ))
         // F64x8(_mm512_cmp_pd(a.0, b.0, _CMP_GT_OQ))
     }
     #[inline(always)]
     unsafe fn cmple_pd(a: Self::Vf64, b: Self::Vf64) -> Self::Vf64 {
         let kmask = _mm512_cmp_pd_mask::<_CMP_LE_OQ>(a.0, b.0);
-        F64x8(_mm512_maskz_mov_pd(kmask, _mm512_set1_pd(-1f64)))
+        F64x8(_mm512_maskz_mov_pd(
+            kmask,
+            _mm512_castsi512_pd(_mm512_set1_epi64(-1)),
+        ))
         // F64x8(_mm512_cmp_pd(a.0, b.0, _CMP_LE_OQ))
     }
     #[inline(always)]
     unsafe fn cmplt_pd(a: Self::Vf64, b: Self::Vf64) -> Self::Vf64 {
         let kmask = _mm512_cmp_pd_mask::<_CMP_LT_OQ>(a.0, b.0);
-        F64x8(_mm512_maskz_mov_pd(kmask, _mm512_set1_pd(-1f64)))
+        F64x8(_mm512_maskz_mov_pd(
+            kmask,
+            _mm512_castsi512_pd(_mm512_set1_epi64(-1)),
+        ))
         // F64x8(_mm512_cmp_pd(a.0, b.0, _CMP_LT_OQ))
     }
     #[inline(always)]
@@ -574,6 +610,10 @@ impl Simd for Avx512 {
         result[1] = a[1] * b[1];
         result[2] = a[2] * b[2];
         result[3] = a[3] * b[3];
+        result[4] = a[4] * b[4];
+        result[5] = a[5] * b[5];
+        result[6] = a[6] * b[6];
+        result[7] = a[7] * b[7];
         result
     }
     #[inline(always)]

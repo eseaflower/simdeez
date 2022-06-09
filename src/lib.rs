@@ -49,11 +49,16 @@
 //! # Example
 //!
 //! ```rust
+//!     #![cfg_attr(feature = "unstable_avx512", feature(stdsimd))]
+//!     #![cfg_attr(feature = "unstable_avx512", feature(avx512_target_feature))]
 //!     use simdeez::*;
 //!     use simdeez::scalar::*;
 //!     use simdeez::sse2::*;
 //!     use simdeez::sse41::*;
 //!     use simdeez::avx2::*;
+//!     #[cfg(feature = "unstable_avx512")]
+//!     use simdeez::avx512::*;
+//!
 //!     // If you want your SIMD function to use use runtime feature detection to call
 //!     // the fastest available version, use the simd_runtime_generate macro:
 //!     simd_runtime_generate!(
@@ -145,14 +150,19 @@
 //! of arcane subtleties with inlining and target_features that must be managed. See how the macros
 //! expand for more detail.
 
-#![cfg_attr(target_feature = "avx512f", feature(stdsimd))]
+#![no_std]
+#![cfg_attr(feature = "unstable_avx512", feature(stdsimd))]
+#![cfg_attr(feature = "unstable_avx512", feature(avx512_target_feature))]
 #![cfg_attr(
     all(target_arch = "wasm32", not(feature = "stable")),
     feature(core_intrinsics)
 )]
-#![no_std]
+
+#[cfg(feature = "std")]
+extern crate std;
+
 #[macro_use]
-#[cfg(test)]
+#[cfg(all(test, not(feature = "std")))]
 extern crate std;
 pub extern crate paste;
 
@@ -175,7 +185,7 @@ pub mod sse41;
 //pub mod wasm32;
 //pub mod avx;
 
-#[cfg(target_feature="avx512f")]
+#[cfg(feature = "unstable_avx512")]
 pub mod avx512;
 
 /// Grouping all the constraints shared by associated types in
@@ -664,8 +674,21 @@ macro_rules! simd_runtime_generate {
             $vis  unsafe fn [<$fn_name _avx2>]($($arg:$typ,)*) $(-> $rt)? {
                 $fn_name::<Avx2>($($arg,)*)
             }
+            #[cfg(feature = "unstable_avx512")]
+            #[target_feature(enable = "avx512f")]
+            $vis  unsafe fn [<$fn_name _avx512>]($($arg:$typ,)*) $(-> $rt)? {
+                $fn_name::<Avx512>($($arg,)*)
+            }
+            #[cfg(not(feature = "unstable_avx512"))]
+            #[allow(unused)]
+            $vis  unsafe fn [<$fn_name _avx512>]($($arg:$typ,)*) $(-> $rt)? {
+                panic!("Called Avx512 function without compiling with 'unstable_avx512'")
+            }
             $vis  fn [<$fn_name _runtime_select>]($($arg:$typ,)*) $(-> $rt)? {
-                if is_x86_feature_detected!("avx2") {
+
+                if cfg!(feature = "unstable_avx512") && is_x86_feature_detected!("avx512f") {
+                     unsafe { [<$fn_name _avx512>]($($arg,)*) }
+                 } else if is_x86_feature_detected!("avx2") {
                     unsafe { [<$fn_name _avx2>]($($arg,)*) }
                 } else if is_x86_feature_detected!("sse4.1") {
                     unsafe { [<$fn_name _sse41>]($($arg,)*) }
@@ -691,7 +714,12 @@ macro_rules! simd_compiletime_generate {
             $body
 
         paste::item! {
-            #[cfg(target_feature = "avx2")]
+            #[cfg(all(feature = "unstable_avx512", target_feature="avx512f"))]
+            $vis fn [<$fn_name _compiletime>]($($arg:$typ,)*) $(-> $rt)? {
+                unsafe { $fn_name::<Avx512>($($arg,)*) }
+            }
+
+            #[cfg(all(target_feature = "avx2", not(all(feature="unstable_avx512", target_feature="avx512f"))))]
             $vis fn [<$fn_name _compiletime>]($($arg:$typ,)*) $(-> $rt)? {
                 unsafe { $fn_name::<Avx2>($($arg,)*) }
             }

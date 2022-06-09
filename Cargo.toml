@@ -13,7 +13,10 @@ edition="2018"
 
 
 [features]
+default = ["std"]
 sleef = ["sleef-sys"]
+unstable_avx512 = []
+std = []
 
 [dependencies]
 paste = "0.1.7"

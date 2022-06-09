@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "unstable_avx512", feature(avx512_target_feature))]
 /// QuickCheck tests
 ///
 /// TODO: test shifts
@@ -6,7 +7,10 @@ mod tests {
     use core::ops::*;
 
     use quickcheck::{quickcheck, TestResult};
-    
+
+    #[cfg(feature = "unstable_avx512")]
+    use simdeez::avx512::*;
+
     use simdeez::avx2::*;
     use simdeez::scalar::*;
     use simdeez::sse2::*;
@@ -90,10 +94,17 @@ mod tests {
                             }
                             if is_x86_feature_detected!("sse4.1"){
                                 ok &= [<$fn_name _sse41>]("sse41", a, b);
-                            }                           
+                            }
                             if is_x86_feature_detected!("avx2"){
                                 ok &= [<$fn_name _avx2>]("avx2", a, b);
                             }
+                            if cfg!(feature = "unstable_avx512") {
+                                if is_x86_feature_detected!("avx512f"){
+                                    ok &= [<$fn_name _avx512>]("avx512", a, b);
+                                }
+                            }
+
+
                         }
 
                         TestResult::from_bool(ok)
@@ -121,7 +132,6 @@ mod tests {
     gen_quickcheck_2_simd!(mul_i32, Mul::mul, Mul::mul, i32, VI32_WIDTH, set1_epi32);
     gen_quickcheck_2_simd!(sub_i32, Sub::sub, Sub::sub, i32, VI32_WIDTH, set1_epi32);
 
-    
     gen_quickcheck_2_simd!(
         bitand_i32,
         BitAnd::bitand,
@@ -146,8 +156,6 @@ mod tests {
         VI32_WIDTH,
         set1_epi32
     );
-
-    
 
     // Equality/ordering/min/max
 
@@ -298,8 +306,6 @@ mod tests {
         set1_epi32
     );
 
-  
-
     gen_quickcheck_2_simd!(min_f32, f32::min, S::min_ps, f32, VF32_WIDTH, set1_ps);
     gen_quickcheck_2_simd!(max_f32, f32::max, S::max_ps, f32, VF32_WIDTH, set1_ps);
 
@@ -319,7 +325,7 @@ mod tests {
         VI32_WIDTH,
         set1_epi32
     );
-   
+
     gen_quickcheck_2_simd!(
         andnot_f32,
         (|a: f32, b: f32| f32::from_bits((!a.to_bits()) & b.to_bits())),
@@ -383,9 +389,14 @@ mod tests {
                             }
                             if is_x86_feature_detected!("sse4.1"){
                                 ok &= [<$fn_name _sse41>]("sse41", a, b, c);
-                            }                            
+                            }
                             if is_x86_feature_detected!("avx2"){
                                 ok &= [<$fn_name _avx2>]("avx2", a, b, c);
+                            }
+                            if cfg!(feature = "unstable_avx512") {
+                                if is_x86_feature_detected!("avx512f"){
+                                    ok &= [<$fn_name _avx512>]("avx512", a, b, c);
+                                }
                             }
                         }
 
@@ -508,9 +519,14 @@ mod tests {
                             }
                             if is_x86_feature_detected!("sse4.1"){
                                 ok &= [<$fn_name _sse41>]("sse41", a);
-                            }                            
+                            }
                             if is_x86_feature_detected!("avx2"){
                                 ok &= [<$fn_name _avx2>]("avx2", a);
+                            }
+                            if cfg!(feature="unstable_avx512") {
+                                if is_x86_feature_detected!("avx512f"){
+                                    ok &= [<$fn_name _avx512>]("avx512", a);
+                                }
                             }
                         }
 
